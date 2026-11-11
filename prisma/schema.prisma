@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PROFESSOR
+  ALUNO
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(ALUNO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student   Student?
+  teacher   Teacher?
+
+  @@map("users")
+}
+
+model Student {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  email        String   @unique
+  birthDate    DateTime
+  registration String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  enrollments  Enrollment[]
+  grades       Grade[]
+  attendances  Attendance[]
+
+  @@map("students")
+}
+
+model Teacher {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  email        String   @unique
+  registration String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  classes      Class[]
+
+  @@map("teachers")
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  workload    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  classes     Class[]
+  contents    Content[]
+
+  @@map("subjects")
+}
+
+model Class {
+  id          String   @id @default(uuid())
+  name        String
+  year        Int
+  semester    Int
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  enrollments Enrollment[]
+  activities  Activity[]
+  attendances Attendance[]
+
+  @@map("classes")
+}
+
+model Enrollment {
+  id             String           @id @default(uuid())
+  studentId      String
+  student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  enrollmentDate DateTime         @default(now())
+  status         EnrollmentStatus @default(ACTIVE)
+
+  @@unique([studentId, classId])
+  @@map("enrollments")
+}
+
+model Content {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  activities  Activity[]
+
+  @@map("contents")
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  contentId   String
+  content     Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  dueDate     DateTime
+  maxScore    Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  grades      Grade[]
+
+  @@map("activities")
+}
+
+model Grade {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  activityId  String
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  score       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, activityId])
+  @@map("grades")
+}
+
+model Attendance {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  date        DateTime
+  present     Boolean
+  createdAt   DateTime @default(now())
+
+  @@unique([studentId, classId, date])
+  @@map("attendances")
+}

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: educaapi_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
+      POSTGRES_DB: ${POSTGRES_DB:-educa_api}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: educaapi_node
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      # O host da URL interna no Docker Compose é "db"
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?Defina POSTGRES_USER no arquivo .env}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:-educa_api}?schema=public
+      - JWT_SECRET=${JWT_SECRET:?Defina um JWT_SECRET seguro no arquivo .env}
+      - PORT=${PORT:-3000}
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

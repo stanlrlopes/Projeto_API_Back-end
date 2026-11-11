@@ -1,0 +1,261 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EducaAPI",
+    "version": "1.0.0",
+    "description": "API REST para gestão educacional, voltada ao ODS 4 - Educação de Qualidade"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Registra um novo usuário",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "João Silva" },
+                  "email": { "type": "string", "example": "joao@email.com" },
+                  "password": { "type": "string", "example": "senha123" },
+                  "role": { "type": "string", "enum": ["ADMIN", "PROFESSOR", "ALUNO"], "example": "ALUNO" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado com sucesso" },
+          "400": { "description": "Erro de validação" },
+          "409": { "description": "E-mail já cadastrado" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login para obter o Token JWT",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "joao@email.com" },
+                  "password": { "type": "string", "example": "senha123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token JWT gerado com sucesso" },
+          "401": { "description": "Credenciais inválidas" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Retorna os dados do usuário logado",
+        "responses": {
+          "200": { "description": "Sucesso" },
+          "401": { "description": "Não autorizado" }
+        }
+      }
+    },
+    "/api/students": {
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Lista todos os alunos (Paginado)",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" }, "example": 1 },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" }, "example": 10 }
+        ],
+        "responses": { "200": { "description": "Sucesso" } }
+      },
+      "post": {
+        "tags": ["Alunos"],
+        "summary": "Cria um novo aluno (ADMIN)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": "string" },
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "birthDate": { "type": "string", "format": "date" },
+                  "registration": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Aluno Criado" } }
+      }
+    },
+    "/api/students/{id}": {
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Busca aluno por ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Sucesso" } }
+      },
+      "put": {
+        "tags": ["Alunos"],
+        "summary": "Atualiza aluno",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Sucesso" } }
+      },
+      "delete": {
+        "tags": ["Alunos"],
+        "summary": "Deleta aluno",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Sucesso" } }
+      }
+    },
+    "/api/teachers": {
+      "get": {
+        "tags": ["Professores"],
+        "summary": "Lista todos os professores (Paginado)",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Sucesso" } }
+      },
+      "post": {
+        "tags": ["Professores"],
+        "summary": "Cria um novo professor",
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } },
+        "responses": { "201": { "description": "Criado" } }
+      }
+    },
+    "/api/teachers/{id}": {
+      "get": { "tags": ["Professores"], "summary": "Obter professor", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Professores"], "summary": "Atualizar", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Professores"], "summary": "Excluir", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/subjects": {
+      "get": { "tags": ["Disciplinas"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Disciplinas"], "summary": "Cria disciplina", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" } } }
+    },
+    "/api/subjects/{id}": {
+      "get": { "tags": ["Disciplinas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Disciplinas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Disciplinas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/classes": {
+      "get": { "tags": ["Turmas"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Turmas"], "summary": "Cria turma", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" } } }
+    },
+    "/api/classes/{id}": {
+      "get": { "tags": ["Turmas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Turmas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Turmas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/enrollments": {
+      "get": { "tags": ["Matrículas"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Matrículas"], "summary": "Cria matrícula", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" } } }
+    },
+    "/api/enrollments/{id}": {
+      "get": { "tags": ["Matrículas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Matrículas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Matrículas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/contents": {
+      "get": { "tags": ["Conteúdos"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Conteúdos"], "summary": "Cria conteúdo", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" } } }
+    },
+    "/api/contents/{id}": {
+      "get": { "tags": ["Conteúdos"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Conteúdos"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Conteúdos"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/activities": {
+      "get": { "tags": ["Atividades"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Atividades"], "summary": "Cria atividade", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" } } }
+    },
+    "/api/activities/{id}": {
+      "get": { "tags": ["Atividades"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Atividades"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Atividades"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/grades": {
+      "get": { "tags": ["Notas"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Notas"], "summary": "Lança nota", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" }, "400": { "description": "Nota excede maxScore" } } }
+    },
+    "/api/grades/{id}": {
+      "get": { "tags": ["Notas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Notas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Notas"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/attendance": {
+      "get": { "tags": ["Frequência"], "summary": "Lista paginada", "responses": { "200": { "description": "Sucesso" } } },
+      "post": { "tags": ["Frequência"], "summary": "Lança frequência", "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "201": { "description": "Criado" }, "409": { "description": "Frequência duplicada" } } }
+    },
+    "/api/attendance/{id}": {
+      "get": { "tags": ["Frequência"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "put": { "tags": ["Frequência"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "Sucesso" } } },
+      "delete": { "tags": ["Frequência"], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Sucesso" } } }
+    },
+    "/api/indicators/students/{id}/average": {
+      "get": {
+        "tags": ["Indicadores Educacionais"],
+        "summary": "Retorna a média analítica do aluno",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Sucesso" } }
+      }
+    },
+    "/api/indicators/students/{id}/attendance": {
+      "get": {
+        "tags": ["Indicadores Educacionais"],
+        "summary": "Retorna a frequência em percentual e contagem absoluta",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Sucesso" } }
+      }
+    },
+    "/api/indicators/low-performance": {
+      "get": {
+        "tags": ["Indicadores Educacionais"],
+        "summary": "Retorna todos os alunos em risco (Média < 6.0)",
+        "responses": { "200": { "description": "Sucesso" }, "403": { "description": "Acesso negado para alunos" } }
+      }
+    },
+    "/api/indicators/dashboard": {
+      "get": {
+        "tags": ["Indicadores Educacionais"],
+        "summary": "Dashboard geral com agregações (ODS 4)",
+        "responses": { "200": { "description": "Sucesso" } }
+      }
+    }
+  }
+}
